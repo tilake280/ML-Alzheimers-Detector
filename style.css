@@ -1,0 +1,44 @@
+/* Game Mode Toggle Buttons */
+.mode-toggle button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Kahoot Grid Layout */
+.kahoot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* The colorful game buttons */
+.k-btn {
+    padding: 30px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.k-btn:hover {
+    transform: scale(1.02);
+}
+
+.k-btn:active {
+    transform: scale(0.98);
+}
+
+/* Kahoot Colors */
+.k-btn.red { background-color: #E21B3C; }
+.k-btn.blue { background-color: #1368CE; }
+.k-btn.yellow { background-color: #D89E00; }
+.k-btn.green { background-color: #26890C; }

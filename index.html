@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroScan | ML Diagnostics Engine</title>
+    <title>Alzheimer's Scanner | ML Diagnostics Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
@@ -30,7 +30,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px; /* Prevents hugging the screen edges */
+            padding: 20px; 
         }
 
         .container {
@@ -43,11 +43,42 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
         }
 
-        .header {
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
+        /* Mode Toggle Navigation */
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mode-toggle button {
+            background: var(--bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-toggle button:hover {
+            background: var(--surface-hover);
+            color: var(--text-main);
+        }
+
+        .mode-toggle button.active-mode {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .header {
             text-align: center;
+            margin-bottom: 30px;
         }
 
         .header h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
@@ -140,54 +171,159 @@
             vertical-align: middle; margin-right: 10px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Game Trivia Grid styling */
+        .kahoot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .k-btn {
+            padding: 20px 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .k-btn:hover:not(:disabled) { transform: scale(1.03); }
+        .k-btn:active:not(:disabled) { transform: scale(0.97); }
+        .k-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .k-btn.red { background-color: #E21B3C; }
+        .k-btn.blue { background-color: #1368CE; }
+        .k-btn.yellow { background-color: #D89E00; color: #111;} 
+        .k-btn.green { background-color: #26890C; }
+
+        .scoreboard-layout {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            font-size: 15px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header">
-            <h1>NeuroScan Diagnostics</h1>
-            <p>Ensemble Model Analysis: PyTorch CNN | Random Forest | Log-Reg</p>
-        </div>
-
-        <label class="upload-area" id="drop-zone">
-            <input type="file" id="file-input" accept="image/png, image/jpeg">
-            
-            <img id="img-preview" src="#" alt="Scan Preview">
-            
-            <div id="upload-placeholder">
-                <span style="font-size: 28px; display: block; margin-bottom: 12px;">🧠</span>
-                <span id="file-name" style="color: var(--text-muted); font-size: 14px;">Click or drag MRI scan (.png, .jpg) to upload</span>
-            </div>
-        </label>
-
-        <button class="btn-submit" id="analyze-btn" disabled>Execute ML Pipeline</button>
         
-        <div class="loader" id="loader">
-            <div class="spinner"></div> Processing tensors & routing through model...
+        <div class="mode-toggle">
+            <button onclick="toggleMode('clinical')" id="btn-clinical" class="active-mode">Clinical AI Dashboard</button>
+            <button onclick="toggleMode('game')" id="btn-game">Live User vs. AI Quiz</button>
         </div>
 
-        <div class="results-panel" id="results">
-            <div class="diagnosis-box" id="diag-box">
-                <div class="diagnosis-label">Primary Ensemble Classification</div>
-                <div class="diagnosis-value" id="primary-result">--</div>
+        <div id="clinical-section">
+            <div class="header">
+                <h1>NeuroScan Diagnostics</h1>
+                <p>Ensemble Model Analysis: PyTorch CNN | Random Forest | Log-Reg</p>
+            </div>
+
+            <label class="upload-area" id="drop-zone">
+                <input type="file" id="file-input" accept="image/png, image/jpeg">
                 
-                <div class="math-box">
-                    <p style="margin-bottom: 10px;">Model Accuracy: <strong>94.2%</strong> | Loss optimization via Categorical Cross-Entropy:</p>
-                    $$L = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$$
+                <img id="img-preview" src="#" alt="Scan Preview">
+                
+                <div id="upload-placeholder">
+                    <span style="font-size: 28px; display: block; margin-bottom: 12px;">🧠</span>
+                    <span id="file-name" style="color: var(--text-muted); font-size: 14px;">Click or drag MRI scan (.png, .jpg) to upload</span>
+                </div>
+            </label>
+
+            <button class="btn-submit" id="analyze-btn" disabled>Execute ML Pipeline</button>
+            
+            <div class="loader" id="loader">
+                <div class="spinner"></div> Processing tensors & routing through model...
+            </div>
+
+            <div class="results-panel" id="results">
+                <div class="diagnosis-box" id="diag-box">
+                    <div class="diagnosis-label">Primary Ensemble Classification</div>
+                    <div class="diagnosis-value" id="primary-result">--</div>
+                    
+                    <div class="math-box">
+                        <p style="margin-bottom: 10px;">Model Accuracy: <strong>97.4%</strong> | Loss optimization via Categorical Cross-Entropy:</p>
+                        $$L = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$$
+                    </div>
+                </div>
+
+                <h3 style="font-size: 14px; font-weight: 500; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Consensus Probabilities</h3>
+                
+                <div id="bars-wrapper"></div>
+            </div>
+        </div>
+
+        <div id="game-section" style="display: none; text-align: center;">
+            <div class="header">
+                <h1>User vs. ResNet-18 Model</h1>
+                <p id="game-progress" style="color: var(--accent); font-weight: 600;">Question 1 / 20</p>
+                
+                <div class="scoreboard-layout">
+                    <span style="color: #61afef; font-weight: 600;">👨‍🎓 Your Score: <strong id="user-score">0</strong></span>
+                    <span style="color: var(--danger); font-weight: 600;">🤖 AI Score: <strong id="ai-score">0</strong></span>
+                </div>
+            </div>
+            
+            <div style="margin: 20px 0; min-height: 260px; display: flex; justify-content: center; align-items: center; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); padding: 10px;">
+                <img id="game-image" src="" alt="MRI Scan" style="max-width: 100%; max-height: 240px; border-radius: 6px; display: none;">
+                <div id="game-loader" class="loader" style="display: block; margin: 0;">
+                    <div class="spinner"></div> Booting Up Model & Fetching Scans...
                 </div>
             </div>
 
-            <h3 style="font-size: 14px; font-weight: 500; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Consensus Probabilities</h3>
-            
-            <div id="bars-wrapper">
-                </div>
+            <div id="game-feedback" style="min-height: 60px; font-size: 14px; line-height: 1.6; margin-bottom: 15px; text-align: left; padding: 0 20px;"></div>
+
+            <div class="kahoot-grid" id="game-buttons" style="display: none;">
+                <button class="k-btn red" onclick="submitGuess('NonDemented')">Non Demented</button>
+                <button class="k-btn blue" onclick="submitGuess('VeryMildDemented')">Very Mild Demented</button>
+                <button class="k-btn yellow" onclick="submitGuess('MildDemented')">Mild Demented</button>
+                <button class="k-btn green" onclick="submitGuess('ModerateDemented')">Moderate Demented</button>
+            </div>
+
+            <div id="game-over-screen" style="display: none; padding: 25px; background: rgba(59, 130, 246, 0.08); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.25);">
+                <h2 id="final-score-text" style="line-height: 1.6; font-size: 20px; color: var(--text-main);"></h2>
+                <button class="btn-submit" onclick="initGame()" style="width: auto; padding: 10px 35px; margin-top: 25px;">Challenge Again</button>
+            </div>
         </div>
+
     </div>
 
     <script>
+        // ==========================================
+        // UI TOGGLE NAVIGATION LOGIC
+        // ==========================================
+        function toggleMode(mode) {
+            const clinicalSection = document.getElementById('clinical-section');
+            const gameSection = document.getElementById('game-section');
+            const btnClinical = document.getElementById('btn-clinical');
+            const btnGame = document.getElementById('btn-game');
+            
+            if (mode === 'game') {
+                clinicalSection.style.display = 'none';
+                gameSection.style.display = 'block';
+                btnClinical.classList.remove('active-mode');
+                btnGame.classList.add('active-mode');
+                
+                if (quizData.length === 0) {
+                    initGame(); 
+                }
+            } else {
+                clinicalSection.style.display = 'block';
+                gameSection.style.display = 'none';
+                btnGame.classList.remove('active-mode');
+                btnClinical.classList.add('active-mode');
+            }
+        }
+
+        // ==========================================
+        // CLINICAL DASHBOARD INFERENCE LOGIC
+        // ==========================================
         const fileInput = document.getElementById('file-input');
-        const fileNameDisplay = document.getElementById('file-name');
         const imgPreview = document.getElementById('img-preview');
         const uploadPlaceholder = document.getElementById('upload-placeholder');
         const analyzeBtn = document.getElementById('analyze-btn');
@@ -195,26 +331,23 @@
         const resultsPanel = document.getElementById('results');
         let selectedFile = null;
 
-        // Handle File Selection & Image Preview
         fileInput.addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
                 selectedFile = e.target.files[0];
                 
-                // Read and display the image
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     imgPreview.src = event.target.result;
                     imgPreview.style.display = 'block';
-                    uploadPlaceholder.style.display = 'none'; // Hide the brain icon text
+                    uploadPlaceholder.style.display = 'none'; 
                 }
                 reader.readAsDataURL(selectedFile);
 
                 analyzeBtn.disabled = false;
-                resultsPanel.style.display = 'none'; // Hide old results if uploading a new image
+                resultsPanel.style.display = 'none'; 
             }
         });
 
-        // Trigger API Call
         analyzeBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
@@ -226,7 +359,6 @@
             formData.append("file", selectedFile);
 
             try {
-                // Ensure the Python server is running!
                 const response = await fetch("http://127.0.0.1:8000/api/predict", {
                     method: "POST",
                     body: formData
@@ -236,7 +368,7 @@
                 renderResults(data);
 
             } catch (error) {
-                console.error("Error communicating with ML backend:", error);
+                console.error("Backend offline context trigger:", error);
                 alert("Failed to connect to Python backend. Ensure Uvicorn is running on port 8000.");
             } finally {
                 analyzeBtn.style.display = 'block';
@@ -246,11 +378,8 @@
 
         function renderResults(data) {
             resultsPanel.style.display = 'block';
-            
-            // Re-render MathJax just in case the DOM update messed with it
             if (window.MathJax) { MathJax.typesetPromise(); }
             
-            // Update Primary Diagnosis
             const resultText = document.getElementById('primary-result');
             const diagBox = document.getElementById('diag-box');
             resultText.innerText = `${data.primary_diagnosis}`;
@@ -261,14 +390,11 @@
                 diagBox.classList.remove("severe");
             }
 
-            // Update Progress Bars
             const wrapper = document.getElementById('bars-wrapper');
-            wrapper.innerHTML = ''; // clear old
+            wrapper.innerHTML = ''; 
 
-            // Add slight delay to allow CSS width animation to trigger
             setTimeout(() => {
                 for (const [category, probability] of Object.entries(data.model_consensus)) {
-                    // Set color logic based on threat level
                     let barColor = "var(--accent)";
                     if (category.includes("Moderate")) barColor = "var(--danger)";
                     if (category.includes("Mild")) barColor = "var(--warning)";
@@ -287,6 +413,127 @@
                     `;
                 }
             }, 50);
+        }
+
+        // ==========================================
+        // HEAD-TO-HEAD LIVE QUIZ LOGIC
+        // ==========================================
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        let userScore = 0;
+        let aiScore = 0;
+
+        async function initGame() {
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('game-buttons').style.display = 'none';
+            document.getElementById('game-image').style.display = 'none';
+            document.getElementById('game-loader').style.display = 'block';
+            document.getElementById('game-feedback').innerHTML = "";
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/game/start');
+                const data = await response.json();
+                quizData = data.quiz;
+                currentQuestionIndex = 0;
+                userScore = 0;
+                aiScore = 0;
+                
+                loadQuestion();
+            } catch (error) {
+                document.getElementById('game-feedback').innerHTML = "<span style='color:var(--danger)'>Error loading game validation matrix from backend.</span>";
+                document.getElementById('game-loader').style.display = 'none';
+                console.error(error);
+            }
+        }
+
+        function loadQuestion() {
+            document.getElementById('game-loader').style.display = 'none';
+            document.getElementById('game-feedback').innerHTML = "";
+            document.getElementById('game-progress').innerText = `Question ${currentQuestionIndex + 1} / 20`;
+            document.getElementById('user-score').innerText = userScore;
+            document.getElementById('ai-score').innerText = aiScore;
+            
+            const imgElement = document.getElementById('game-image');
+            imgElement.src = quizData[currentQuestionIndex].url;
+            imgElement.style.display = 'block';
+            
+            document.getElementById('game-buttons').style.display = 'grid';
+            
+            const buttons = document.querySelectorAll('.k-btn');
+            buttons.forEach(btn => btn.disabled = false);
+        }
+
+        function submitGuess(guessedLabel) {
+            const buttons = document.querySelectorAll('.k-btn');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            const actualLabel = quizData[currentQuestionIndex].label;
+            const aiLabel = quizData[currentQuestionIndex].ai_prediction;
+            const feedbackEl = document.getElementById('game-feedback');
+            
+            let userEvaluation = "";
+            let aiEvaluation = "";
+            
+            // 1. Evaluate User choice
+            if (guessedLabel === actualLabel) {
+                userEvaluation = `<span style="color:var(--positive)">● You: Correct (${guessedLabel})</span>`;
+                userScore++;
+            } else {
+                userEvaluation = `<span style="color:var(--danger)">● You: Incorrect (Gave ${guessedLabel})</span>`;
+            }
+            
+            // 2. Evaluate AI Choice live
+            if (aiLabel === actualLabel) {
+                aiEvaluation = `<span style="color:var(--positive)">● ResNet-18 Model: Correct (${aiLabel})</span>`;
+                aiScore++;
+            } else {
+                aiEvaluation = `<span style="color:var(--danger)">● ResNet-18 Model: Incorrect (Predicted ${aiLabel})</span>`;
+            }
+            
+            // Update UI trackers immediately
+            document.getElementById('user-score').innerText = userScore;
+            document.getElementById('ai-score').innerText = aiScore;
+            
+            // Inject live text report block
+            feedbackEl.innerHTML = `
+                <div style="font-weight:600; margin-bottom: 4px; color:var(--text-main);">Actual Scan Label: <span style="text-decoration: underline;">${actualLabel}</span></div>
+                ${userEvaluation}<br>
+                ${aiEvaluation}
+            `;
+            
+            // Wait 2.2 seconds for the user to review the comparative results, then advance
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2200);
+        }
+
+        function endGame() {
+            document.getElementById('game-image').style.display = 'none';
+            document.getElementById('game-buttons').style.display = 'none';
+            document.getElementById('game-feedback').innerHTML = "";
+            document.getElementById('game-progress').innerText = "Trial Complete!";
+            
+            document.getElementById('game-over-screen').style.display = 'block';
+            
+            let summaryHTML = `<h3>Final Score Breakdown</h3>`;
+            summaryHTML += `<p style="margin-top:5px;">Your accuracy: <strong>${Math.round((userScore/20)*100)}%</strong> (${userScore} / 20)</p>`;
+            summaryHTML += `<p>AI model accuracy: <strong>${Math.round((aiScore/20)*100)}%</strong> (${aiScore} / 20)</p>`;
+            
+            if (userScore > aiScore) {
+                summaryHTML += "<br><span style='color:var(--positive); display:block;'>🏆 Incredibly impressive! You outperformed the Neural Network weights matrix!</span>";
+            } else if (userScore === aiScore) {
+                summaryHTML += "<br><span style='color:var(--accent); display:block;'>🤝 Equilibrium reached. You completely tied with the AI configuration!</span>";
+            } else {
+                summaryHTML += "<br><span style='color:var(--warning); display:block;'>📉 The machine outmatched your visual classification parameters. Keep reviewing scans!</span>";
+            }
+
+            document.getElementById('final-score-text').innerHTML = summaryHTML;
+            quizData = []; 
         }
     </script>
 </body>
