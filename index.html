@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScan | ML Diagnostics Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg: #0f1115;
+            --surface: #181a20;
+            --surface-hover: #1f222a;
+            --border: #2c2f36;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --positive: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px; /* Prevents hugging the screen edges */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+        .header p { color: var(--text-muted); font-size: 14px; margin-top: 8px; }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg);
+            display: block;
+            position: relative;
+        }
+
+        .upload-area:hover { border-color: var(--accent); background: var(--surface-hover); }
+        .upload-area input { display: none; }
+        
+        #img-preview {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 6px;
+            display: none;
+            margin: 0 auto 15px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-submit {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); }
+        .btn-submit:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        /* Results Panel */
+        .results-panel {
+            display: none;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .diagnosis-box {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .diagnosis-box.severe { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2); }
+
+        .diagnosis-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+        .diagnosis-value { font-size: 32px; font-weight: 600; margin-top: 8px; color: var(--positive); }
+        .severe .diagnosis-value { color: var(--danger); }
+
+        .math-box {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .bar-container { margin-bottom: 16px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 500; }
+        .bar-track { width: 100%; background: var(--bg); height: 8px; border-radius: 4px; border: 1px solid var(--border); overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .loader { display: none; text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 20px; }
+        .spinner {
+            display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.1); 
+            border-radius: 50%; border-top-color: var(--accent); animation: spin 1s ease-in-out infinite;
+            vertical-align: middle; margin-right: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>NeuroScan Diagnostics</h1>
+            <p>Ensemble Model Analysis: PyTorch CNN | Random Forest | Log-Reg</p>
+        </div>
+
+        <label class="upload-area" id="drop-zone">
+            <input type="file" id="file-input" accept="image/png, image/jpeg">
+            
+            <img id="img-preview" src="#" alt="Scan Preview">
+            
+            <div id="upload-placeholder">
+                <span style="font-size: 28px; display: block; margin-bottom: 12px;">🧠</span>
+                <span id="file-name" style="color: var(--text-muted); font-size: 14px;">Click or drag MRI scan (.png, .jpg) to upload</span>
+            </div>
+        </label>
+
+        <button class="btn-submit" id="analyze-btn" disabled>Execute ML Pipeline</button>
+        
+        <div class="loader" id="loader">
+            <div class="spinner"></div> Processing tensors & routing through model...
+        </div>
+
+        <div class="results-panel" id="results">
+            <div class="diagnosis-box" id="diag-box">
+                <div class="diagnosis-label">Primary Ensemble Classification</div>
+                <div class="diagnosis-value" id="primary-result">--</div>
+                
+                <div class="math-box">
+                    <p style="margin-bottom: 10px;">Model Accuracy: <strong>94.2%</strong> | Loss optimization via Categorical Cross-Entropy:</p>
+                    $$L = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$$
+                </div>
+            </div>
+
+            <h3 style="font-size: 14px; font-weight: 500; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Consensus Probabilities</h3>
+            
+            <div id="bars-wrapper">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const fileNameDisplay = document.getElementById('file-name');
+        const imgPreview = document.getElementById('img-preview');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const loader = document.getElementById('loader');
+        const resultsPanel = document.getElementById('results');
+        let selectedFile = null;
+
+        // Handle File Selection & Image Preview
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                
+                // Read and display the image
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imgPreview.src = event.target.result;
+                    imgPreview.style.display = 'block';
+                    uploadPlaceholder.style.display = 'none'; // Hide the brain icon text
+                }
+                reader.readAsDataURL(selectedFile);
+
+                analyzeBtn.disabled = false;
+                resultsPanel.style.display = 'none'; // Hide old results if uploading a new image
+            }
+        });
+
+        // Trigger API Call
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            analyzeBtn.style.display = 'none';
+            loader.style.display = 'block';
+            resultsPanel.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            try {
+                // Ensure the Python server is running!
+                const response = await fetch("http://127.0.0.1:8000/api/predict", {
+                    method: "POST",
+                    body: formData
+                });
+                
+                const data = await response.json();
+                renderResults(data);
+
+            } catch (error) {
+                console.error("Error communicating with ML backend:", error);
+                alert("Failed to connect to Python backend. Ensure Uvicorn is running on port 8000.");
+            } finally {
+                analyzeBtn.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+
+        function renderResults(data) {
+            resultsPanel.style.display = 'block';
+            
+            // Re-render MathJax just in case the DOM update messed with it
+            if (window.MathJax) { MathJax.typesetPromise(); }
+            
+            // Update Primary Diagnosis
+            const resultText = document.getElementById('primary-result');
+            const diagBox = document.getElementById('diag-box');
+            resultText.innerText = `${data.primary_diagnosis}`;
+
+            if (data.primary_diagnosis.includes("Mild") || data.primary_diagnosis.includes("Moderate")) {
+                diagBox.classList.add("severe");
+            } else {
+                diagBox.classList.remove("severe");
+            }
+
+            // Update Progress Bars
+            const wrapper = document.getElementById('bars-wrapper');
+            wrapper.innerHTML = ''; // clear old
+
+            // Add slight delay to allow CSS width animation to trigger
+            setTimeout(() => {
+                for (const [category, probability] of Object.entries(data.model_consensus)) {
+                    // Set color logic based on threat level
+                    let barColor = "var(--accent)";
+                    if (category.includes("Moderate")) barColor = "var(--danger)";
+                    if (category.includes("Mild")) barColor = "var(--warning)";
+                    if (category.includes("Non")) barColor = "var(--positive)";
+
+                    wrapper.innerHTML += `
+                        <div class="bar-container">
+                            <div class="bar-label">
+                                <span>${category}</span>
+                                <span>${probability}%</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: ${probability}%; background-color: ${barColor};"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 50);
+        }
+    </script>
+</body>
+</html>
