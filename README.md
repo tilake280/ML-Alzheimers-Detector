@@ -19,7 +19,7 @@ The project bridges advanced computer vision with modern web architecture, featu
 ## Repository Structure
 
 ```text
-quantProject/
+alzheimersDetector/
 ├── Data_Clean/                     # Generated via compilation scripts
 │   ├── Train/                      # 32,000 images strictly used for backpropagation
 │   └── Test/                       # 8,000 images strictly used for frontend validation
@@ -46,7 +46,7 @@ quantProject/
 Clone the project repository, navigate into your directory, and initialize a Python 3.12+ virtual environment:
 
 ```bash
-cd quantProject
+cd alzheimersDetector
 python3 -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
