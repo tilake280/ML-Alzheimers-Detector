@@ -2,7 +2,3 @@ Data/
 Data_Clean/
 __pycache__/
 venv/
-oasis2_raw/
-oasis2_slices/
-oasis2_splits/
-leakage_examples.png
