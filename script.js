@@ -1,24 +1,24 @@
-// --- VIEW TOGGLE LOGIC ---
+// Switch between clinical and game views
 function toggleMode(mode) {
-    const clinicalSection = document.getElementById('clinical-section'); // MAKE SURE your main app has id="clinical-section"
+    const clinicalSection = document.getElementById('clinical-section');
     const gameSection = document.getElementById('game-section');
     
     if (mode === 'game') {
         clinicalSection.style.display = 'none';
         gameSection.style.display = 'block';
-        initGame(); // Start game when tab is clicked
+        initGame();
     } else {
         clinicalSection.style.display = 'block';
         gameSection.style.display = 'none';
     }
 }
 
-// --- GAME LOGIC VARIABLES ---
+// Game state
 let quizData = [];
 let currentQuestionIndex = 0;
 let score = 0;
 
-// 1. Fetch 20 random images from the backend
+// Fetch 20 random images from the backend
 async function initGame() {
     document.getElementById('game-over-screen').style.display = 'none';
     document.getElementById('game-buttons').style.display = 'grid';
@@ -39,7 +39,7 @@ async function initGame() {
     }
 }
 
-// 2. Display the current image
+// Show the current image
 function loadQuestion() {
     document.getElementById('game-feedback').innerText = "";
     document.getElementById('game-progress').innerText = `Question ${currentQuestionIndex + 1} / 20`;
@@ -54,9 +54,9 @@ function loadQuestion() {
     buttons.forEach(btn => btn.disabled = false);
 }
 
-// 3. Check the user's guess
+// Check the user's guess
 function submitGuess(guessedLabel) {
-    // Disable buttons so they can't double click
+    // Disable buttons to prevent double clicks
     const buttons = document.querySelectorAll('.k-btn');
     buttons.forEach(btn => btn.disabled = true);
     
@@ -64,17 +64,17 @@ function submitGuess(guessedLabel) {
     const feedbackEl = document.getElementById('game-feedback');
     
     if (guessedLabel === actualLabel) {
-        feedbackEl.innerText = "✅ Correct!";
+        feedbackEl.innerText = "Correct!";
         feedbackEl.style.color = "green";
         score++;
     } else {
-        feedbackEl.innerText = `❌ Incorrect! It was ${actualLabel}`;
+        feedbackEl.innerText = `Incorrect. It was ${actualLabel}`;
         feedbackEl.style.color = "red";
     }
     
     document.getElementById('game-score').innerText = `Score: ${score}`;
     
-    // Wait 1.5 seconds so they can see the answer, then move to next
+    // Show the answer for 1.5 seconds, then move on
     setTimeout(() => {
         currentQuestionIndex++;
         if (currentQuestionIndex < quizData.length) {
@@ -85,7 +85,7 @@ function submitGuess(guessedLabel) {
     }, 1500);
 }
 
-// 4. Show the final score
+// Show the final score
 function endGame() {
     document.getElementById('game-image').style.display = 'none';
     document.getElementById('game-buttons').style.display = 'none';
@@ -97,10 +97,10 @@ function endGame() {
     const percentage = Math.round((score / 20) * 100);
     document.getElementById('final-score-text').innerText = `You scored ${score} / 20 (${percentage}%)`;
     
-    // Compare their score to the AI!
+    // Compare against the model's accuracy
     if (percentage >= 97) {
-        document.getElementById('final-score-text').innerHTML += "<br>🤖 Wow! You tied the AI model!";
+        document.getElementById('final-score-text').innerHTML += "<br>You matched the model.";
     } else {
-        document.getElementById('final-score-text').innerHTML += "<br>📉 The AI scored 97%. Keep studying!";
+        document.getElementById('final-score-text').innerHTML += "<br>The model scored 97%.";
     }
 }

@@ -43,7 +43,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
         }
 
-        /* Mode Toggle Navigation */
+        /* Mode toggle */
         .mode-toggle {
             display: flex;
             justify-content: center;
@@ -172,7 +172,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Game Trivia Grid styling */
+        /* Quiz answer grid */
         .kahoot-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -230,7 +230,6 @@
                 <img id="img-preview" src="#" alt="Scan Preview">
                 
                 <div id="upload-placeholder">
-                    <span style="font-size: 28px; display: block; margin-bottom: 12px;">🧠</span>
                     <span id="file-name" style="color: var(--text-muted); font-size: 14px;">Click or drag MRI scan (.png, .jpg) to upload</span>
                 </div>
             </label>
@@ -264,8 +263,8 @@
                 <p id="game-progress" style="color: var(--accent); font-weight: 600;">Question 1 / 20</p>
                 
                 <div class="scoreboard-layout">
-                    <span style="color: #61afef; font-weight: 600;">👨‍🎓 Your Score: <strong id="user-score">0</strong></span>
-                    <span style="color: var(--danger); font-weight: 600;">🤖 AI Score: <strong id="ai-score">0</strong></span>
+                    <span style="color: #61afef; font-weight: 600;">Your Score: <strong id="user-score">0</strong></span>
+                    <span style="color: var(--danger); font-weight: 600;">AI Score: <strong id="ai-score">0</strong></span>
                 </div>
             </div>
             
@@ -294,9 +293,7 @@
     </div>
 
     <script>
-        // ==========================================
-        // UI TOGGLE NAVIGATION LOGIC
-        // ==========================================
+        // Mode toggle
         function toggleMode(mode) {
             const clinicalSection = document.getElementById('clinical-section');
             const gameSection = document.getElementById('game-section');
@@ -320,9 +317,7 @@
             }
         }
 
-        // ==========================================
-        // CLINICAL DASHBOARD INFERENCE LOGIC
-        // ==========================================
+        // Clinical upload and prediction
         const fileInput = document.getElementById('file-input');
         const imgPreview = document.getElementById('img-preview');
         const uploadPlaceholder = document.getElementById('upload-placeholder');
@@ -368,7 +363,7 @@
                 renderResults(data);
 
             } catch (error) {
-                console.error("Backend offline context trigger:", error);
+                console.error("Request failed:", error);
                 alert("Failed to connect to Python backend. Ensure Uvicorn is running on port 8000.");
             } finally {
                 analyzeBtn.style.display = 'block';
@@ -415,9 +410,7 @@
             }, 50);
         }
 
-        // ==========================================
-        // HEAD-TO-HEAD LIVE QUIZ LOGIC
-        // ==========================================
+        // Quiz
         let quizData = [];
         let currentQuestionIndex = 0;
         let userScore = 0;
@@ -440,7 +433,7 @@
                 
                 loadQuestion();
             } catch (error) {
-                document.getElementById('game-feedback').innerHTML = "<span style='color:var(--danger)'>Error loading game validation matrix from backend.</span>";
+                document.getElementById('game-feedback').innerHTML = "<span style='color:var(--danger)'>Error loading quiz from backend.</span>";
                 document.getElementById('game-loader').style.display = 'none';
                 console.error(error);
             }
@@ -474,7 +467,7 @@
             let userEvaluation = "";
             let aiEvaluation = "";
             
-            // 1. Evaluate User choice
+            // Check the user's answer
             if (guessedLabel === actualLabel) {
                 userEvaluation = `<span style="color:var(--positive)">● You: Correct (${guessedLabel})</span>`;
                 userScore++;
@@ -482,7 +475,7 @@
                 userEvaluation = `<span style="color:var(--danger)">● You: Incorrect (Gave ${guessedLabel})</span>`;
             }
             
-            // 2. Evaluate AI Choice live
+            // Check the model's answer
             if (aiLabel === actualLabel) {
                 aiEvaluation = `<span style="color:var(--positive)">● ResNet-18 Model: Correct (${aiLabel})</span>`;
                 aiScore++;
@@ -490,18 +483,18 @@
                 aiEvaluation = `<span style="color:var(--danger)">● ResNet-18 Model: Incorrect (Predicted ${aiLabel})</span>`;
             }
             
-            // Update UI trackers immediately
+            // Update scores
             document.getElementById('user-score').innerText = userScore;
             document.getElementById('ai-score').innerText = aiScore;
             
-            // Inject live text report block
+            // Show results for this question
             feedbackEl.innerHTML = `
                 <div style="font-weight:600; margin-bottom: 4px; color:var(--text-main);">Actual Scan Label: <span style="text-decoration: underline;">${actualLabel}</span></div>
                 ${userEvaluation}<br>
                 ${aiEvaluation}
             `;
             
-            // Wait 2.2 seconds for the user to review the comparative results, then advance
+            // Show results for 2.2 seconds, then advance
             setTimeout(() => {
                 currentQuestionIndex++;
                 if (currentQuestionIndex < quizData.length) {
@@ -525,11 +518,11 @@
             summaryHTML += `<p>AI model accuracy: <strong>${Math.round((aiScore/20)*100)}%</strong> (${aiScore} / 20)</p>`;
             
             if (userScore > aiScore) {
-                summaryHTML += "<br><span style='color:var(--positive); display:block;'>🏆 Incredibly impressive! You outperformed the Neural Network weights matrix!</span>";
+                summaryHTML += "<br><span style='color:var(--positive); display:block;'>You beat the model.</span>";
             } else if (userScore === aiScore) {
-                summaryHTML += "<br><span style='color:var(--accent); display:block;'>🤝 Equilibrium reached. You completely tied with the AI configuration!</span>";
+                summaryHTML += "<br><span style='color:var(--accent); display:block;'>You tied with the model.</span>";
             } else {
-                summaryHTML += "<br><span style='color:var(--warning); display:block;'>📉 The machine outmatched your visual classification parameters. Keep reviewing scans!</span>";
+                summaryHTML += "<br><span style='color:var(--warning); display:block;'>The model beat you this time.</span>";
             }
 
             document.getElementById('final-score-text').innerHTML = summaryHTML;

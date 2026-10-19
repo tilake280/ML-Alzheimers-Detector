@@ -1,4 +1,4 @@
-/* Game Mode Toggle Buttons */
+/* Mode toggle buttons */
 .mode-toggle button {
     padding: 10px 20px;
     font-size: 16px;
@@ -8,7 +8,7 @@
     border: 1px solid #ccc;
 }
 
-/* Kahoot Grid Layout */
+/* Answer grid */
 .kahoot-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -16,7 +16,7 @@
     margin-top: 20px;
 }
 
-/* The colorful game buttons */
+/* Answer buttons */
 .k-btn {
     padding: 30px 20px;
     font-size: 18px;
@@ -37,7 +37,7 @@
     transform: scale(0.98);
 }
 
-/* Kahoot Colors */
+/* Button colors */
 .k-btn.red { background-color: #E21B3C; }
 .k-btn.blue { background-color: #1368CE; }
 .k-btn.yellow { background-color: #D89E00; }

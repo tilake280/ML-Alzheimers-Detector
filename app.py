@@ -14,7 +14,7 @@ app = FastAPI(
     version="4.0.0"
 )
 
-# Allow the frontend to talk to the backend
+# Allow the frontend to call the API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,15 +22,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 1. SERVE IMAGES TO THE BROWSER FOR THE GAME ---
+# Serve dataset images so the quiz can display them
 app.mount("/static", StaticFiles(directory="Data_Clean"), name="static")
 
-# PyTorch/ImageFolder default alphabetical class mapping order
+# ImageFolder sorts classes alphabetically, so the order must match
 CLASSES = ["MildDemented", "ModerateDemented", "NonDemented", "VeryMildDemented"]
 
-print("⏳ Initializing PyTorch Architecture & Loading Weights...")
+print("Loading model weights...")
 
-# --- 2. LOAD DEEP LEARNING MODEL ---
+# Load model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = models.resnet18(weights=None) 
 num_features = model.fc.in_features
@@ -45,7 +45,7 @@ model.load_state_dict(torch.load("resnet_brain_weights.pth", map_location=device
 model = model.to(device)
 model.eval() 
 
-print("✅ Deep Learning Model Online.")
+print("Model loaded.")
 
 inference_transforms = transforms.Compose([
     transforms.Resize((128, 128)),
@@ -53,7 +53,7 @@ inference_transforms = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# --- 3. ENDPOINT: CLINICAL DIAGNOSIS PREDICTION ---
+# Classify an uploaded scan
 @app.post("/api/predict")
 async def predict(file: UploadFile = File(...)):
     try:
@@ -79,13 +79,13 @@ async def predict(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
-# --- 4. ENDPOINT: HEAD-TO-HEAD VS AI GAME ---
+# Build a quiz of test images with the model's predictions
 @app.get("/api/game/start")
 async def start_game():
     test_dir = "Data_Clean/Test"
     all_images = []
-    
-    # Map out the file paths and true labels
+
+    # Collect file paths and true labels
     for c in CLASSES:
         class_dir = os.path.join(test_dir, c)
         if os.path.exists(class_dir):
@@ -97,13 +97,13 @@ async def start_game():
                         "label": c
                     })
     
-    # Shuffle and pick 20 random testing images
+    # Pick 20 random test images
     random.shuffle(all_images)
     game_images = all_images[:20]
-    
+
     quiz_list = []
-    
-    # Pre-calculate what the AI model predicts for these exact 20 images
+
+    # Get the model's prediction for each image
     for img in game_images:
         try:
             pil_img = Image.open(img["local_path"]).convert('RGB')
